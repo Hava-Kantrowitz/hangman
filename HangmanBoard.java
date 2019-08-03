@@ -210,7 +210,10 @@ public class HangmanBoard extends JPanel implements ActionListener{
 	}
 	
 	public void paintLetters(Graphics2D g2d) {
-		//g2d.drawString(currLetter, 400, 500);
+		if (currLetter != null) {
+			g2d.drawString(currLetter, 100, 100);
+		}
+		
 		System.out.println(currLetter);
 	}
 	

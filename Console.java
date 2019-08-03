@@ -16,7 +16,7 @@ public class Console extends JFrame{
 		setResizable(false);
 		pack();//puts the board in center of JFrame container
 		
-		setTitle("Snake");//sets title of frame
+		setTitle("Hangman");//sets title of frame
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//exits the screen when closed
 		setLocationRelativeTo(null);
 	}

@@ -97,7 +97,7 @@ import java.awt.event.KeyEvent;
 				letter = "Z";
 			}
 			else {
-				letter = "Invalid input";
+				letter = null;
 			}
 			
 			
