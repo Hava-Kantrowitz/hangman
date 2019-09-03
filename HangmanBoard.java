@@ -32,13 +32,16 @@ public class HangmanBoard extends JPanel implements ActionListener{
 	private final int DELAY = 120;//the speed of the animation in ms
 	
 	private boolean inGame = true;//whether the game is running or not
-	int numRound = 0;
+	int numRound = 0;//the round number, or the number of total guesses so far
 	
-	String guessWord = "Hava";
-	int wordLength = guessWord.length();
+	String guessWord = "Hava";//the word to guess
 	
-	TAdapter listener = new TAdapter();
-	String currLetter;
+	TAdapter listener = new TAdapter();//t adapter
+	String currLetter;//the letter currently being pressed on the keyboard
+	String nowLetter;//the most recent letter submitted to the game
+	
+	String letterArray[] = new String[26];//array to hold all potential false letters
+	int arrayCount = 0;//counter for letter array
 
 	/**
 	 * Constructor
@@ -62,6 +65,11 @@ public class HangmanBoard extends JPanel implements ActionListener{
 		
 		setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
 		initGame();
+		
+		//initializes the letter array with blanks 
+		for (int counter = 0; counter < letterArray.length; counter++) {
+			letterArray[counter] = "";
+		}
 	}
 	
 	
@@ -75,7 +83,32 @@ public class HangmanBoard extends JPanel implements ActionListener{
 	}
 	
 	public void getLetter() {
-		currLetter = listener.letter;
+		currLetter = listener.letter;//gets the letter from the user
+		if(currLetter != nowLetter) {//if the letter obtained is not the most recently used one
+			nowLetter = currLetter;//then it is now the most recently used one
+			if (!(isInArray(nowLetter)) && !isInWord(nowLetter)) {//if it's not already in the letter array, and it isn't in the word itself
+				letterArray[arrayCount] = nowLetter;//then put it into the letter array
+				arrayCount++;//and increase the letter array counter
+				numRound++;//increase the round
+			}
+		}
+	}
+	
+	/**
+	 * Determines if the letter under consideration is in the false letter array
+	 * @param nowLetter the letter currently being considered
+	 * @return true if the letter is in the array, false otherwise
+	 */
+	public boolean isInArray(String nowLetter) {
+		
+		boolean isIn = false;//assume false
+		for(String letter : letterArray) {
+			if (letter == nowLetter) {
+				isIn = true;//loop through array, if letter is found set to true
+			}
+		}
+		
+		return isIn;
 	}
 	
 	/**
@@ -93,10 +126,10 @@ public class HangmanBoard extends JPanel implements ActionListener{
         g2d.setStroke(new BasicStroke(3));//set the size of the stroke
         g2d.setColor(Color.black);//set the color to black
         
-        paintLetters(g2d);
+        paintLetters(g2d);//paint the false letters
         
         
-        switch(numRound) {
+        switch(numRound) {//paint the hangman depending on the round
         	case 0: 
         		paintHanging(g2d);
         		break;
@@ -209,12 +242,56 @@ public class HangmanBoard extends JPanel implements ActionListener{
 		
 	}
 	
-	public void paintLetters(Graphics2D g2d) {
-		if (currLetter != null) {
-			g2d.drawString(currLetter, 100, 100);
+	/**
+	 * Determines if the given letter is in the word 
+	 * @param nowLetter the letter under consideration
+	 * @return true if in word, false otherwise
+	 * THERE IS SOME ISSUE HERE WHERE IT ISN'T LOOPING THROUGH THE WHOLE WORD JUST THE FIRST LETTER
+	 */
+	public boolean isInWord(String nowLetter) {
+		boolean isIn = false;//assume not in
+		char charLetter = nowLetter.charAt(0);//convert the letter to char
+		for(int i = 0; i < guessWord.length(); i++) {//for each index in the guess word
+			
+			if(charLetter == guessWord.charAt(i)) {
+				isIn = true; //if the letter is true 
+			}
 		}
+		return isIn;
+	}
+	
+	public void paintLetters(Graphics2D g2d) {
+		int counterLetter = 0; 
+		if(nowLetter != null) {
+			for(int letterCount = 0; letterCount < letterArray.length; letterCount++) {
+				
+				if (letterCount < 16) {
+				g2d.drawString(letterArray[letterCount], 225 + (10*letterCount), 50);
+				}
+				
+				else {
+					
+					g2d.drawString(letterArray[letterCount], 225 + (10*counterLetter), 70);
+					counterLetter++;
+				}
+				
+			}	
+		}
+	}
+	
+	 /**
+     * Draws the game over screen
+     * @param g the graphics input
+     */
+    private void drawGameOver(Graphics g) {
+		String msg = "Game Over. You lose!";
+		Font small = new Font("Helvetica", Font.BOLD, 30);
+		FontMetrics fm = getFontMetrics(small);
 		
-		System.out.println(currLetter);
+		g.setColor(Color.black);
+		setBackground(Color.green);
+		g.setFont(small);
+		g.drawString(msg, 90, 350);
 	}
 	
 	public void paintHanging(Graphics2D g2d) {
@@ -284,6 +361,17 @@ public class HangmanBoard extends JPanel implements ActionListener{
 		Toolkit.getDefaultToolkit().sync();//smooth out the animation
 	}
 	
+	public boolean isInGame() {
+		if (numRound <= 11) {
+			return true;
+		}
+		else {
+			timer.stop();
+			return false;
+			
+		}
+	}
+	
 	/**
 	 * The action performed every delay miliseconds of the timed animation
 	 * @param arg0 the input to action performed
@@ -293,6 +381,7 @@ public class HangmanBoard extends JPanel implements ActionListener{
 		//if the game is still going on
 		if(inGame) {
 			getLetter();
+			isInGame();
 		}
 		
 		repaint();//repaint the board
